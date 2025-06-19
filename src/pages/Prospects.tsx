@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,8 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { Prospect } from '@/types';
+import { OggoComparator } from '@/components/prospects/OggoComparator';
+import { ImportSyncManager } from '@/components/prospects/ImportSyncManager';
 import { 
   Search, 
   Plus, 
@@ -17,16 +19,20 @@ import {
   MoreVertical,
   Calendar,
   Star,
-  TrendingUp
+  TrendingUp,
+  Database,
+  Scale
 } from 'lucide-react';
 
-// Mock data
+// Mock data avec format de date DD/MM/YYYY
 const mockProspects: Prospect[] = [
   {
     id: '1',
     nom: 'Marie Martin',
+    prenom: 'Marie',
     email: 'marie.martin@email.com',
     telephone: '01.23.45.67.89',
+    date_naissance: '15/03/1956',
     age: 68,
     statut: 'qualifie',
     score: 85,
@@ -39,8 +45,10 @@ const mockProspects: Prospect[] = [
   {
     id: '2',
     nom: 'Paul Bernard',
+    prenom: 'Paul',
     email: 'paul.bernard@email.com',
     telephone: '01.34.56.78.90',
+    date_naissance: '22/08/1952',
     age: 72,
     statut: 'interesse',
     score: 75,
@@ -53,8 +61,10 @@ const mockProspects: Prospect[] = [
   {
     id: '3',
     nom: 'Lucie Dubois',
+    prenom: 'Lucie',
     email: 'lucie.dubois@email.com',
     telephone: '01.45.67.89.01',
+    date_naissance: '10/12/1959',
     age: 65,
     statut: 'nouveau',
     score: 65,
@@ -67,8 +77,10 @@ const mockProspects: Prospect[] = [
   {
     id: '4',
     nom: 'Jean Lefort',
+    prenom: 'Jean',
     email: 'jean.lefort@email.com',
     telephone: '01.56.78.90.12',
+    date_naissance: '05/07/1955',
     age: 69,
     statut: 'negocie',
     score: 90,
@@ -102,6 +114,7 @@ export default function Prospects() {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [showImportDialog, setShowImportDialog] = useState(false);
   
   const filteredProspects = mockProspects.filter(prospect => {
     const matchesSearch = prospect.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -129,10 +142,27 @@ export default function Prospects() {
             {filteredProspects.length} prospect{filteredProspects.length > 1 ? 's' : ''}
           </p>
         </div>
-        <Button className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600">
-          <Plus className="w-4 h-4 mr-2" />
-          Ajouter prospect
-        </Button>
+        <div className="flex space-x-2">
+          <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+                <Database className="w-4 h-4 mr-2" />
+                Import & Sync
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl">
+              <DialogHeader>
+                <DialogTitle>Import et Synchronisation</DialogTitle>
+              </DialogHeader>
+              <ImportSyncManager />
+            </DialogContent>
+          </Dialog>
+          
+          <Button className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600">
+            <Plus className="w-4 h-4 mr-2" />
+            Ajouter prospect
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -183,9 +213,14 @@ export default function Prospects() {
                   </Avatar>
                   <div>
                     <CardTitle className="text-lg font-semibold text-gray-900">
-                      {prospect.nom}
+                      {prospect.nom} {prospect.prenom}
                     </CardTitle>
-                    <p className="text-sm text-gray-500">{prospect.age} ans • {prospect.type_contrat}</p>
+                    <p className="text-sm text-gray-500">
+                      {prospect.age} ans • {prospect.type_contrat}
+                      {prospect.date_naissance && (
+                        <span className="ml-2">• {prospect.date_naissance}</span>
+                      )}
+                    </p>
                   </div>
                 </div>
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -226,7 +261,7 @@ export default function Prospects() {
                 <span className="font-semibold text-gray-900">€{prospect.budget_max}/mois</span>
               </div>
 
-              {/* Actions */}
+              {/* Actions avec Comparateur intégré */}
               <div className="flex space-x-2 pt-2">
                 <Button variant="outline" size="sm" className="flex-1">
                   <Phone className="w-4 h-4 mr-1" />
@@ -236,10 +271,19 @@ export default function Prospects() {
                   <Calendar className="w-4 h-4 mr-1" />
                   RDV
                 </Button>
-                <Button size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700">
-                  <TrendingUp className="w-4 h-4 mr-1" />
-                  Voir
-                </Button>
+                <OggoComparator 
+                  prospect={prospect}
+                  trigger={
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1 bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 hover:from-green-100 hover:to-emerald-100"
+                    >
+                      <Scale className="w-4 h-4 mr-1" />
+                      Offres
+                    </Button>
+                  }
+                />
               </div>
 
               {/* Last Activity */}
