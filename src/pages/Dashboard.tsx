@@ -1,300 +1,288 @@
 
-import { MetricCard } from '@/components/dashboard/MetricCard';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from '@/hooks/useAuth';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell
-} from 'recharts';
-import {
-  Users,
-  DollarSign,
-  TrendingUp,
-  Target,
-  Mail,
-  Phone,
+import { MetricCard } from "@/components/dashboard/MetricCard";
+import { ObjectivesWidget } from "@/components/dashboard/ObjectivesWidget";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { 
+  Users, 
+  TrendingUp, 
   Calendar,
-  Award
-} from 'lucide-react';
-
-const monthlyData = [
-  { name: 'Jan', value: 120 },
-  { name: 'Fév', value: 135 },
-  { name: 'Mar', value: 148 },
-  { name: 'Avr', value: 156 },
-  { name: 'Mai', value: 189 },
-  { name: 'Juin', value: 201 },
-  { name: 'Juil', value: 178 },
-  { name: 'Août', value: 165 },
-  { name: 'Sept', value: 188 },
-  { name: 'Oct', value: 205 },
-  { name: 'Nov', value: 187 },
-  { name: 'Déc', value: 198 },
-];
-
-const pipelineData = [
-  { name: 'Nouveau', value: 45, color: '#3B82F6' },
-  { name: 'Qualifié', value: 32, color: '#8B5CF6' },
-  { name: 'Négociation', value: 28, color: '#F59E0B' },
-  { name: 'Signature', value: 18, color: '#10B981' },
-];
-
-const campaignData = [
-  { name: 'Email Juin', ouverture: 38, conversion: 8 },
-  { name: 'SMS Seniors', ouverture: 42, conversion: 12 },
-  { name: 'Appels Découverte', ouverture: 85, conversion: 25 },
-];
+  Phone,
+  Mail,
+  Target,
+  AlertCircle,
+  CheckCircle,
+  Clock
+} from "lucide-react";
 
 export default function Dashboard() {
   const { user } = useAuth();
 
-  const getMetricsForRole = () => {
-    if (user?.role === 'admin') {
-      return [
-        {
-          title: "Chiffre d'affaires",
-          value: "€158,420",
-          subtitle: "Ce mois",
-          icon: DollarSign,
-          trend: { value: 12.5, label: "vs mois dernier" },
-          color: 'green' as const
-        },
-        {
-          title: "Nouveaux prospects",
-          value: "1,247",
-          subtitle: "Ce trimestre",
-          icon: Users,
-          trend: { value: 8.2, label: "vs trimestre dernier" },
-          color: 'blue' as const
-        },
-        {
-          title: "Taux de conversion",
-          value: "38%",
-          subtitle: "Moyenne 12 mois",
-          icon: TrendingUp,
-          trend: { value: 5.1, label: "amélioration" },
-          color: 'purple' as const
-        },
-        {
-          title: "Conversions",
-          value: "342",
-          subtitle: "Contrats signés",
-          icon: Award,
-          trend: { value: 15.3, label: "vs objectif" },
-          color: 'orange' as const
-        }
-      ];
-    } else if (user?.role === 'manager') {
-      return [
-        {
-          title: "Prospects équipe",
-          value: "284",
-          subtitle: "En cours",
-          icon: Users,
-          trend: { value: 6.8, label: "cette semaine" },
-          color: 'blue' as const
-        },
-        {
-          title: "CA équipe",
-          value: "€89,350",
-          subtitle: "Ce mois",
-          icon: DollarSign,
-          trend: { value: 9.2, label: "vs objectif" },
-          color: 'green' as const
-        },
-        {
-          title: "Objectif mensuel",
-          value: "78%",
-          subtitle: "Atteint",
-          icon: Target,
-          trend: { value: 12, label: "en avance" },
-          color: 'purple' as const
-        },
-        {
-          title: "Performance équipe",
-          value: "4.2/5",
-          subtitle: "Note moyenne",
-          icon: Award,
-          color: 'orange' as const
-        }
-      ];
-    } else {
-      return [
-        {
-          title: "Mes prospects",
-          value: "47",
-          subtitle: "Actifs",
-          icon: Users,
-          trend: { value: 4.5, label: "cette semaine" },
-          color: 'blue' as const
-        },
-        {
-          title: "Mon CA",
-          value: "€24,580",
-          subtitle: "Ce mois",
-          icon: DollarSign,
-          trend: { value: 15.2, label: "vs objectif" },
-          color: 'green' as const
-        },
-        {
-          title: "Appels planifiés",
-          value: "12",
-          subtitle: "Cette semaine",
-          icon: Phone,
-          color: 'purple' as const
-        },
-        {
-          title: "RDV confirmés",
-          value: "8",
-          subtitle: "Prochains jours",
-          icon: Calendar,
-          color: 'orange' as const
-        }
-      ];
+  // Données simulées pour la démo
+  const stats = {
+    prospects: 156,
+    conversions: 23,
+    rdvPlanifies: 12,
+    tauxConversion: 14.7
+  };
+
+  const recentActivities = [
+    {
+      id: 1,
+      type: 'prospect',
+      title: 'Nouveau prospect ajouté',
+      description: 'Marie Dubois - Mutuelle famille',
+      time: 'Il y a 2h',
+      icon: Users,
+      color: 'bg-blue-100 text-blue-600'
+    },
+    {
+      id: 2,
+      type: 'rdv',
+      title: 'RDV confirmé',
+      description: 'Jean Martin - Demain 14h30',
+      time: 'Il y a 3h',
+      icon: Calendar,
+      color: 'bg-green-100 text-green-600'
+    },
+    {
+      id: 3,
+      type: 'email',
+      title: 'Email de suivi envoyé',
+      description: 'Relance automatique prospects',
+      time: 'Il y a 5h',
+      icon: Mail,
+      color: 'bg-purple-100 text-purple-600'
+    },
+    {
+      id: 4,
+      type: 'conversion',
+      title: 'Nouvelle conversion',
+      description: 'Sophie Laurent - Contrat signé',
+      time: 'Hier',
+      icon: TrendingUp,
+      color: 'bg-yellow-100 text-yellow-600'
+    }
+  ];
+
+  const tasks = [
+    {
+      id: 1,
+      title: 'Rappeler M. Durand',
+      priority: 'high',
+      dueDate: 'Aujourd\'hui 15h',
+      status: 'pending'
+    },
+    {
+      id: 2,
+      title: 'Préparer devis Mme Bernard',
+      priority: 'medium',
+      dueDate: 'Demain',
+      status: 'in_progress'
+    },
+    {
+      id: 3,
+      title: 'Relance prospects inactifs',
+      priority: 'low',
+      dueDate: 'Cette semaine',
+      status: 'pending'
+    }
+  ];
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'bg-red-100 text-red-800';
+      case 'medium': return 'bg-yellow-100 text-yellow-800';
+      case 'low': return 'bg-blue-100 text-blue-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const metrics = getMetricsForRole();
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'completed': return <CheckCircle className="h-4 w-4 text-green-600" />;
+      case 'in_progress': return <Clock className="h-4 w-4 text-blue-600" />;
+      default: return <AlertCircle className="h-4 w-4 text-orange-600" />;
+    }
+  };
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">
-          Dashboard {user?.role === 'admin' ? 'Administrateur' : user?.role === 'manager' ? 'Manager' : 'Commercial'}
-        </h1>
-        <p className="text-gray-600 mt-1">
-          Vue d'ensemble de votre activité Premunia CRM
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Bonjour {user?.name?.split(' ')[0] || 'Utilisateur'} 👋
+          </h1>
+          <p className="text-gray-600 mt-2">
+            Voici un aperçu de votre activité commerciale
+          </p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+            {user?.role === 'admin' ? 'Administrateur' : 
+             user?.role === 'manager' ? 'Manager' : 'Commercial'}
+          </Badge>
+        </div>
       </div>
 
-      {/* Metrics */}
+      {/* Métriques principales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {metrics.map((metric, index) => (
-          <MetricCard key={index} {...metric} />
-        ))}
+        <MetricCard
+          title="Prospects"
+          value={stats.prospects.toString()}
+          change="+12%"
+          trend="up"
+          icon={Users}
+          color="blue"
+        />
+        <MetricCard
+          title="Conversions"
+          value={stats.conversions.toString()}
+          change="+8%"
+          trend="up"
+          icon={TrendingUp}
+          color="green"
+        />
+        <MetricCard
+          title="RDV planifiés"
+          value={stats.rdvPlanifies.toString()}
+          change="+3"
+          trend="up"
+          icon={Calendar}
+          color="purple"
+        />
+        <MetricCard
+          title="Taux conversion"
+          value={`${stats.tauxConversion}%`}
+          change="+2.1%"
+          trend="up"
+          icon={Target}
+          color="orange"
+        />
       </div>
 
-      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Objectifs du mois - Visible pour tous les rôles */}
+        <div className="lg:col-span-1">
+          <ObjectivesWidget />
+        </div>
+
+        {/* Activité récente */}
+        <div className="lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Activité récente</CardTitle>
+              <CardDescription>
+                Dernières actions et événements
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {recentActivities.map((activity) => {
+                  const IconComponent = activity.icon;
+                  return (
+                    <div key={activity.id} className="flex items-start space-x-4">
+                      <div className={`p-2 rounded-full ${activity.color}`}>
+                        <IconComponent className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-gray-900">{activity.title}</p>
+                        <p className="text-sm text-gray-600">{activity.description}</p>
+                        <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Performance Chart */}
-        <Card className="shadow-sm border-0">
+        {/* Tâches à faire */}
+        <Card>
           <CardHeader>
-            <CardTitle className="text-lg font-semibold">Performance mensuelle</CardTitle>
+            <CardTitle>Tâches à faire</CardTitle>
+            <CardDescription>
+              Vos tâches prioritaires
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis 
-                  dataKey="name" 
-                  stroke="#6b7280"
-                  fontSize={12}
-                />
-                <YAxis stroke="#6b7280" fontSize={12} />
-                <Tooltip 
-                  contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                  }}
-                />
-                <Bar 
-                  dataKey="value" 
-                  fill="url(#barGradient)"
-                  radius={[4, 4, 0, 0]}
-                />
-                <defs>
-                  <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3B82F6" />
-                    <stop offset="100%" stopColor="#1D4ED8" />
-                  </linearGradient>
-                </defs>
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="space-y-4">
+              {tasks.map((task) => (
+                <div key={task.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    {getStatusIcon(task.status)}
+                    <div>
+                      <p className="font-medium text-gray-900">{task.title}</p>
+                      <p className="text-sm text-gray-600">{task.dueDate}</p>
+                    </div>
+                  </div>
+                  <Badge className={getPriorityColor(task.priority)}>
+                    {task.priority === 'high' ? 'Urgent' : 
+                     task.priority === 'medium' ? 'Moyen' : 'Faible'}
+                  </Badge>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
 
-        {/* Pipeline Distribution */}
-        <Card className="shadow-sm border-0">
+        {/* Prochains RDV */}
+        <Card>
           <CardHeader>
-            <CardTitle className="text-lg font-semibold">Répartition du pipeline</CardTitle>
+            <CardTitle>Prochains rendez-vous</CardTitle>
+            <CardDescription>
+              Planning des prochains jours
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={pipelineData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  dataKey="value"
-                  label={({ name, value }) => `${name}: ${value}`}
-                >
-                  {pipelineData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-blue-100 text-blue-600 rounded-full">
+                    <Phone className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Jean Martin</p>
+                    <p className="text-sm text-gray-600">Demain 14h30 - Appel téléphonique</p>
+                  </div>
+                </div>
+                <Badge variant="outline">Confirmé</Badge>
+              </div>
+              
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-green-100 text-green-600 rounded-full">
+                    <Calendar className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Sophie Bernard</p>
+                    <p className="text-sm text-gray-600">Jeudi 10h00 - Visioconférence</p>
+                  </div>
+                </div>
+                <Badge variant="outline">Planifié</Badge>
+              </div>
+              
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-purple-100 text-purple-600 rounded-full">
+                    <Users className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Famille Dubois</p>
+                    <p className="text-sm text-gray-600">Vendredi 16h00 - Rendez-vous bureau</p>
+                  </div>
+                </div>
+                <Badge variant="outline">Confirmé</Badge>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
-
-      {/* Campaign Performance */}
-      {(user?.role === 'admin' || user?.role === 'manager') && (
-        <Card className="shadow-sm border-0">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold flex items-center">
-              <Mail className="w-5 h-5 mr-2 text-blue-600" />
-              Performance des campagnes récentes
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={campaignData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="name" stroke="#6b7280" fontSize={12} />
-                <YAxis stroke="#6b7280" fontSize={12} />
-                <Tooltip 
-                  contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                  }}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="ouverture" 
-                  stroke="#3B82F6" 
-                  strokeWidth={3}
-                  name="Taux d'ouverture (%)"
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="conversion" 
-                  stroke="#10B981" 
-                  strokeWidth={3}
-                  name="Taux de conversion (%)"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

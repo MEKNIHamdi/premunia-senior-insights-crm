@@ -172,6 +172,117 @@ export type Database = {
           },
         ]
       }
+      automation_executions: {
+        Row: {
+          client_id: string | null
+          created_at: string | null
+          date_execution: string | null
+          date_programmee: string | null
+          erreur: string | null
+          id: string
+          prospect_id: string | null
+          resultat: Json | null
+          scenario_id: string | null
+          statut: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string | null
+          date_execution?: string | null
+          date_programmee?: string | null
+          erreur?: string | null
+          id?: string
+          prospect_id?: string | null
+          resultat?: Json | null
+          scenario_id?: string | null
+          statut?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string | null
+          date_execution?: string | null
+          date_programmee?: string | null
+          erreur?: string | null
+          id?: string
+          prospect_id?: string | null
+          resultat?: Json | null
+          scenario_id?: string | null
+          statut?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_executions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "automation_executions_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "prospects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "automation_executions_scenario_id_fkey"
+            columns: ["scenario_id"]
+            isOneToOne: false
+            referencedRelation: "automation_scenarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automation_scenarios: {
+        Row: {
+          actions: Json | null
+          conditions: Json | null
+          created_at: string | null
+          created_by: string | null
+          delai_minutes: number | null
+          description: string | null
+          id: string
+          nom: string
+          statut: string | null
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          actions?: Json | null
+          conditions?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          delai_minutes?: number | null
+          description?: string | null
+          id?: string
+          nom: string
+          statut?: string | null
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          actions?: Json | null
+          conditions?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          delai_minutes?: number | null
+          description?: string | null
+          id?: string
+          nom?: string
+          statut?: string | null
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_scenarios_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       claims: {
         Row: {
           assigned_to: string | null
@@ -325,6 +436,75 @@ export type Database = {
           },
         ]
       }
+      commercial_objectives: {
+        Row: {
+          ca_realise: number | null
+          commercial_id: string | null
+          conversions_realisees: number | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          objectif_ca: number | null
+          objectif_conversions: number | null
+          objectif_prospects: number | null
+          objectif_rdv: number | null
+          periode_type: string
+          periode_valeur: string
+          prospects_realises: number | null
+          rdv_realises: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          ca_realise?: number | null
+          commercial_id?: string | null
+          conversions_realisees?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          objectif_ca?: number | null
+          objectif_conversions?: number | null
+          objectif_prospects?: number | null
+          objectif_rdv?: number | null
+          periode_type: string
+          periode_valeur: string
+          prospects_realises?: number | null
+          rdv_realises?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          ca_realise?: number | null
+          commercial_id?: string | null
+          conversions_realisees?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          objectif_ca?: number | null
+          objectif_conversions?: number | null
+          objectif_prospects?: number | null
+          objectif_rdv?: number | null
+          periode_type?: string
+          periode_valeur?: string
+          prospects_realises?: number | null
+          rdv_realises?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commercial_objectives_commercial_id_fkey"
+            columns: ["commercial_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commercial_objectives_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           category: string | null
@@ -393,6 +573,168 @@ export type Database = {
           {
             foreignKeyName: "documents_uploaded_by_fkey"
             columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_templates: {
+        Row: {
+          contenu_html: string
+          contenu_text: string | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          nom: string
+          sujet: string
+          type: string
+          updated_at: string | null
+          variables: Json | null
+        }
+        Insert: {
+          contenu_html: string
+          contenu_text?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          nom: string
+          sujet: string
+          type: string
+          updated_at?: string | null
+          variables?: Json | null
+        }
+        Update: {
+          contenu_html?: string
+          contenu_text?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          nom?: string
+          sujet?: string
+          type?: string
+          updated_at?: string | null
+          variables?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketing_events: {
+        Row: {
+          client_id: string | null
+          commercial_id: string | null
+          date_evenement: string | null
+          donnees_evenement: Json | null
+          id: string
+          prospect_id: string | null
+          scenario_id: string | null
+          type_evenement: string
+        }
+        Insert: {
+          client_id?: string | null
+          commercial_id?: string | null
+          date_evenement?: string | null
+          donnees_evenement?: Json | null
+          id?: string
+          prospect_id?: string | null
+          scenario_id?: string | null
+          type_evenement: string
+        }
+        Update: {
+          client_id?: string | null
+          commercial_id?: string | null
+          date_evenement?: string | null
+          donnees_evenement?: Json | null
+          id?: string
+          prospect_id?: string | null
+          scenario_id?: string | null
+          type_evenement?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_events_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketing_events_commercial_id_fkey"
+            columns: ["commercial_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketing_events_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "prospects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketing_events_scenario_id_fkey"
+            columns: ["scenario_id"]
+            isOneToOne: false
+            referencedRelation: "automation_scenarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      performance_stats: {
+        Row: {
+          appels_effectues: number | null
+          ca_genere: number | null
+          commercial_id: string | null
+          created_at: string | null
+          date_stat: string
+          emails_envoyes: number | null
+          id: string
+          prospects_convertis: number | null
+          prospects_nouveaux: number | null
+          rdv_honores: number | null
+          rdv_planifies: number | null
+          taux_conversion: number | null
+        }
+        Insert: {
+          appels_effectues?: number | null
+          ca_genere?: number | null
+          commercial_id?: string | null
+          created_at?: string | null
+          date_stat: string
+          emails_envoyes?: number | null
+          id?: string
+          prospects_convertis?: number | null
+          prospects_nouveaux?: number | null
+          rdv_honores?: number | null
+          rdv_planifies?: number | null
+          taux_conversion?: number | null
+        }
+        Update: {
+          appels_effectues?: number | null
+          ca_genere?: number | null
+          commercial_id?: string | null
+          created_at?: string | null
+          date_stat?: string
+          emails_envoyes?: number | null
+          id?: string
+          prospects_convertis?: number | null
+          prospects_nouveaux?: number | null
+          rdv_honores?: number | null
+          rdv_planifies?: number | null
+          taux_conversion?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "performance_stats_commercial_id_fkey"
+            columns: ["commercial_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
