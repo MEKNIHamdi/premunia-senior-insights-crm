@@ -1,4 +1,3 @@
-
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -13,7 +12,8 @@ import {
   UserCog,
   LogOut,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Bug
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
@@ -30,6 +30,7 @@ const navigation = [
 const adminNavigation = [
   { name: 'Utilisateurs', href: '/admin/users', icon: UserCog, roles: ['admin'] },
   { name: 'Paramètres', href: '/admin/settings', icon: Settings, roles: ['admin'] },
+  { name: 'Debug', href: '/debug', icon: Bug, roles: ['admin'] },
 ];
 
 export function Sidebar() {
