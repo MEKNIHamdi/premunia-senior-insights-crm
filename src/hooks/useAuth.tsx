@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '@/types';
 
@@ -11,12 +10,12 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock user data pour la démo avec des UUIDs valides
+// Mock user data pour la démo avec des UUIDs valides et les vrais noms
 const MOCK_USERS: User[] = [
   {
     id: '550e8400-e29b-41d4-a716-446655440000',
     email: 'admin@premunia.fr',
-    name: 'Jean Dupont',
+    name: 'Hamdi Mekni',
     role: 'admin'
   },
   {
@@ -27,8 +26,20 @@ const MOCK_USERS: User[] = [
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440002',
-    email: 'commercial@premunia.fr',
-    name: 'Pierre Martin',
+    email: 'commercial1@premunia.fr',
+    name: 'Snoussi Zouhair',
+    role: 'commercial'
+  },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440003',
+    email: 'commercial2@premunia.fr',
+    name: 'Dahmani Mouna',
+    role: 'commercial'
+  },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440004',
+    email: 'commercial3@premunia.fr',
+    name: 'Maatoug Radhia',
     role: 'commercial'
   }
 ];
