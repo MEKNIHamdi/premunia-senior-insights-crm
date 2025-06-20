@@ -131,7 +131,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
           title="Prospects"
-          value={stats.prospects.toString()}
+          value={stats.prospects}
           change="+12%"
           trend="up"
           icon={Users}
@@ -139,7 +139,7 @@ export default function Dashboard() {
         />
         <MetricCard
           title="Conversions"
-          value={stats.conversions.toString()}
+          value={stats.conversions}
           change="+8%"
           trend="up"
           icon={TrendingUp}
@@ -147,7 +147,7 @@ export default function Dashboard() {
         />
         <MetricCard
           title="RDV planifiés"
-          value={stats.rdvPlanifies.toString()}
+          value={stats.rdvPlanifies}
           change="+3"
           trend="up"
           icon={Calendar}

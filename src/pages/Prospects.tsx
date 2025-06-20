@@ -172,9 +172,7 @@ export default function Prospects() {
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-full sm:w-48 border-gray-200">
-                <Filter className="w-4 h-4 mr-2"
-
-                />
+                <Filter className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="Filtrer par statut" />
               </SelectTrigger>
               <SelectContent>
@@ -209,10 +207,10 @@ export default function Prospects() {
                    prospect.status === 'negotiating' ? 'negocie' :
                    prospect.status === 'converted' ? 'signe' :
                    prospect.status === 'lost' ? 'perdu' :
-                   'nouveau' as const,
+                   'nouveau' as 'nouveau' | 'qualifie' | 'interesse' | 'negocie' | 'signe' | 'perdu',
             score: 75,
             budget_max: prospect.expected_revenue || 200,
-            type_contrat: 'individuel' as const,
+            type_contrat: 'individuel' as 'individuel' | 'couple' | 'famille',
             commercial_id: prospect.assigned_to,
             date_creation: prospect.created_at,
             derniere_activite: prospect.updated_at || prospect.created_at
