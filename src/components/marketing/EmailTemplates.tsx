@@ -1,364 +1,244 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Edit, Trash2, Eye, Mail, Gift, Phone, TrendingUp } from 'lucide-react';
-import { emailTemplatesApi, EmailTemplate } from '@/lib/marketing-api';
-import { toast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { marketingApi } from '@/lib/marketing-api';
+import { 
+  Mail, 
+  Plus, 
+  Edit, 
+  Trash2, 
+  Eye,
+  Send,
+  Copy,
+  FileText,
+  Settings
+} from 'lucide-react';
+
+interface EmailTemplate {
+  id: string;
+  nom: string;
+  type: string;
+  sujet: string;
+  contenu_html: string;
+  contenu_text?: string;
+  variables?: Record<string, string>;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
 
 export function EmailTemplates() {
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<EmailTemplate | null>(null);
-  const [previewTemplate, setPreviewTemplate] = useState<EmailTemplate | null>(null);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [formData, setFormData] = useState({
     nom: '',
+    type: 'prospection',
     sujet: '',
     contenu_html: '',
     contenu_text: '',
-    type: 'bienvenue' as EmailTemplate['type']
+    variables: {} as Record<string, string>
   });
-
-  const queryClient = useQueryClient();
 
   const { data: templates = [], isLoading } = useQuery({
     queryKey: ['email-templates'],
-    queryFn: emailTemplatesApi.getAll
+    queryFn: marketingApi.getEmailTemplates
   });
 
   const createMutation = useMutation({
-    mutationFn: emailTemplatesApi.create,
+    mutationFn: marketingApi.createEmailTemplate,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['email-templates'] });
-      setIsCreateDialogOpen(false);
+      toast({ title: 'Template créé avec succès' });
       resetForm();
-      toast({ title: "Template créé avec succès" });
     },
-    onError: (error: any) => {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+    onError: (error) => {
+      toast({ 
+        title: 'Erreur lors de la création', 
+        description: error.message,
+        variant: 'destructive' 
+      });
     }
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, updates }: { id: string; updates: Partial<EmailTemplate> }) =>
-      emailTemplatesApi.update(id, updates),
+    mutationFn: ({ id, ...data }: { id: string } & Partial<EmailTemplate>) => 
+      marketingApi.updateEmailTemplate(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['email-templates'] });
-      setEditingTemplate(null);
-      resetForm();
-      toast({ title: "Template mis à jour avec succès" });
-    },
-    onError: (error: any) => {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({ title: 'Template mis à jour avec succès' });
+      setIsEditing(false);
+    }
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: marketingApi.deleteEmailTemplate,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['email-templates'] });
+      toast({ title: 'Template supprimé avec succès' });
     }
   });
 
   const resetForm = () => {
     setFormData({
       nom: '',
+      type: 'prospection',
       sujet: '',
       contenu_html: '',
       contenu_text: '',
-      type: 'bienvenue'
+      variables: {}
     });
+    setSelectedTemplate(null);
+    setIsEditing(false);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingTemplate) {
-      updateMutation.mutate({ id: editingTemplate.id, updates: formData });
+    
+    if (isEditing && selectedTemplate) {
+      updateMutation.mutate({
+        id: selectedTemplate.id,
+        ...formData
+      });
     } else {
       createMutation.mutate(formData);
     }
   };
 
-  const getTemplateIcon = (type: EmailTemplate['type']) => {
-    switch (type) {
-      case 'bienvenue': return <Mail className="h-4 w-4" />;
-      case 'relance': return <Phone className="h-4 w-4" />;
-      case 'anniversaire': return <Gift className="h-4 w-4" />;
-      case 'cross_selling': return <TrendingUp className="h-4 w-4" />;
-      default: return <Mail className="h-4 w-4" />;
-    }
+  const handleEdit = (template: EmailTemplate) => {
+    setSelectedTemplate(template);
+    setFormData({
+      nom: template.nom,
+      type: template.type,
+      sujet: template.sujet,
+      contenu_html: template.contenu_html,
+      contenu_text: template.contenu_text || '',
+      variables: template.variables || {}
+    });
+    setIsEditing(true);
   };
 
-  const getTemplateLabel = (type: EmailTemplate['type']) => {
-    switch (type) {
-      case 'bienvenue': return 'Bienvenue';
-      case 'relance': return 'Relance';
-      case 'anniversaire': return 'Anniversaire';
-      case 'cross_selling': return 'Cross-selling';
-      case 'personnalise': return 'Personnalisé';
-      default: return type;
-    }
+  const handlePreview = (template: EmailTemplate) => {
+    setSelectedTemplate(template);
+    setShowPreview(true);
   };
 
-  const getDefaultTemplates = () => ({
-    bienvenue: {
-      sujet: 'Bienvenue chez Premunia - Votre devis mutuelle santé',
-      contenu_html: `
-        <h2>Bonjour {{prenom}} {{nom}},</h2>
-        <p>Merci d'avoir fait confiance à Premunia pour votre recherche de mutuelle santé.</p>
-        <p>Nous avons bien reçu votre demande de devis et notre équipe d'experts va étudier votre dossier dans les plus brefs délais.</p>
-        <p>Vous recevrez votre comparatif d'offres personnalisé sous 24h à 48h maximum.</p>
-        <p><strong>En attendant, voici ce qui va se passer :</strong></p>
-        <ul>
-          <li>✅ Analyse de votre profil et de vos besoins</li>
-          <li>✅ Sélection des meilleures offres du marché</li>
-          <li>✅ Envoi de votre comparatif personnalisé</li>
-          <li>✅ Accompagnement personnalisé par votre conseiller</li>
-        </ul>
-        <p>Cordialement,<br>L'équipe Premunia</p>
-      `
-    },
-    relance: {
-      sujet: 'Votre devis mutuelle santé vous attend - {{prenom}}',
-      contenu_html: `
-        <h2>Bonjour {{prenom}},</h2>
-        <p>Nous avons tenté de vous joindre concernant votre demande de devis mutuelle santé.</p>
-        <p>Votre comparatif personnalisé est prêt et nous aimerions vous le présenter.</p>
-        <p><strong>Pourquoi nous choisir ?</strong></p>
-        <ul>
-          <li>🏆 Les meilleures offres du marché</li>
-          <li>💰 Jusqu'à 40% d'économies</li>
-          <li>🤝 Accompagnement gratuit et sans engagement</li>
-          <li>⚡ Souscription en ligne en 5 minutes</li>
-        </ul>
-        <p>Contactez-nous au <strong>01 XX XX XX XX</strong> ou répondez à cet email.</p>
-        <p>Cordialement,<br>{{commercial_nom}}</p>
-      `
-    },
-    anniversaire: {
-      sujet: 'Joyeux anniversaire {{prenom}} ! 🎉',
-      contenu_html: `
-        <h2>🎉 Joyeux anniversaire {{prenom}} ! 🎂</h2>
-        <p>Toute l'équipe Premunia vous souhaite un très joyeux anniversaire !</p>
-        <p>En cette occasion spéciale, nous tenions à vous remercier pour votre confiance.</p>
-        <p><strong>Profitez de notre offre anniversaire :</strong></p>
-        <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h3>🎁 Offre spéciale anniversaire</h3>
-          <p><strong>-20% sur votre prochaine cotisation</strong></p>
-          <p>Valable jusqu'au {{date_fin_offre}}</p>
-        </div>
-        <p>Contactez votre conseiller {{commercial_nom}} pour en profiter !</p>
-        <p>Encore bon anniversaire !<br>L'équipe Premunia</p>
-      `
-    },
-    cross_selling: {
-      sujet: 'Complétez votre protection avec nos solutions {{prenom}}',
-      contenu_html: `
-        <h2>Bonjour {{prenom}},</h2>
-        <p>Nous espérons que vous êtes satisfait(e) de votre mutuelle santé Premunia.</p>
-        <p>Saviez-vous que nous proposons d'autres solutions pour compléter votre protection ?</p>
-        <p><strong>Nos solutions complémentaires :</strong></p>
-        <ul>
-          <li>🏠 <strong>Assurance habitation</strong> - À partir de 15€/mois</li>
-          <li>🚗 <strong>Assurance auto</strong> - Devis gratuit en 2 minutes</li>
-          <li>💼 <strong>Prévoyance</strong> - Protection de vos revenus</li>
-          <li>🏦 <strong>Assurance vie</strong> - Préparez votre avenir</li>
-        </ul>
-        <p>En tant que client Premunia, bénéficiez de <strong>tarifs préférentiels</strong> sur toutes nos solutions.</p>
-        <p>Contactez {{commercial_nom}} au {{commercial_telephone}} pour un devis gratuit.</p>
-        <p>Cordialement,<br>L'équipe Premunia</p>
-      `
-    }
-  });
+  const generatePreviewContent = (template: EmailTemplate) => {
+    const mockData = {
+      prenom: 'Jean',
+      nom: 'Dupont',
+      email: 'jean.dupont@example.com',
+      commercial_nom: 'Marie Martin',
+      commercial_telephone: '01.23.45.67.89'
+    };
+
+    let content = template.contenu_html;
+    Object.entries(mockData).forEach(([key, value]) => {
+      const regex = new RegExp(`{{${key}}}`, 'g');
+      content = content.replace(regex, value);
+    });
+
+    return { __html: content };
+  };
 
   if (isLoading) {
-    return <div className="flex justify-center p-8">Chargement des templates...</div>;
+    return (
+      <div className="p-6 space-y-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="h-64 bg-gray-200 rounded-lg"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Templates d'emails</h2>
-          <p className="text-gray-600">Gérez vos modèles d'emails pour l'automatisation</p>
+          <h1 className="text-3xl font-bold text-gray-900">Templates Email</h1>
+          <p className="text-gray-600 mt-1">
+            Gérez vos modèles d'emails pour les campagnes marketing
+          </p>
         </div>
-        
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => { resetForm(); setEditingTemplate(null); }}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nouveau template
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>
-                {editingTemplate ? 'Modifier le template' : 'Créer un nouveau template'}
-              </DialogTitle>
-              <DialogDescription>
-                Configurez votre modèle d'email pour l'automatisation marketing
-              </DialogDescription>
-            </DialogHeader>
-            
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="nom">Nom du template</Label>
-                  <Input
-                    id="nom"
-                    value={formData.nom}
-                    onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
-                    placeholder="Ex: Email bienvenue prospects"
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="type">Type de template</Label>
-                  <Select
-                    value={formData.type}
-                    onValueChange={(value: EmailTemplate['type']) => {
-                      const defaultTemplates = getDefaultTemplates();
-                      const defaultTemplate = defaultTemplates[value];
-                      
-                      setFormData({ 
-                        ...formData, 
-                        type: value,
-                        ...(defaultTemplate && !editingTemplate ? {
-                          sujet: defaultTemplate.sujet,
-                          contenu_html: defaultTemplate.contenu_html
-                        } : {})
-                      });
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="bienvenue">Bienvenue</SelectItem>
-                      <SelectItem value="relance">Relance</SelectItem>
-                      <SelectItem value="anniversaire">Anniversaire</SelectItem>
-                      <SelectItem value="cross_selling">Cross-selling</SelectItem>
-                      <SelectItem value="personnalise">Personnalisé</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="sujet">Sujet de l'email</Label>
-                <Input
-                  id="sujet"
-                  value={formData.sujet}
-                  onChange={(e) => setFormData({ ...formData, sujet: e.target.value })}
-                  placeholder="Ex: Bienvenue chez Premunia - {{prenom}}"
-                  required
-                />
-              </div>
-              
-              <Tabs defaultValue="html" className="w-full">
-                <TabsList>
-                  <TabsTrigger value="html">Contenu HTML</TabsTrigger>
-                  <TabsTrigger value="text">Contenu texte (optionnel)</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="html" className="space-y-2">
-                  <Label htmlFor="contenu_html">Contenu HTML</Label>
-                  <Textarea
-                    id="contenu_html"
-                    value={formData.contenu_html}
-                    onChange={(e) => setFormData({ ...formData, contenu_html: e.target.value })}
-                    placeholder="Contenu HTML de votre email..."
-                    rows={12}
-                    required
-                    className="font-mono text-sm"
-                  />
-                  <p className="text-xs text-gray-500">
-                    Variables disponibles: {{prenom}}, {{nom}}, {{email}}, {{commercial_nom}}, {{commercial_telephone}}
-                  </p>
-                </TabsContent>
-                
-                <TabsContent value="text" className="space-y-2">
-                  <Label htmlFor="contenu_text">Contenu texte</Label>
-                  <Textarea
-                    id="contenu_text"
-                    value={formData.contenu_text}
-                    onChange={(e) => setFormData({ ...formData, contenu_text: e.target.value })}
-                    placeholder="Version texte de votre email (optionnel)..."
-                    rows={8}
-                  />
-                </TabsContent>
-              </Tabs>
-              
-              <div className="flex justify-end space-x-2 pt-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => {
-                    setIsCreateDialogOpen(false);
-                    setEditingTemplate(null);
-                    resetForm();
-                  }}
-                >
-                  Annuler
-                </Button>
-                <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-                  {editingTemplate ? 'Mettre à jour' : 'Créer'}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={() => setIsEditing(true)} className="bg-blue-600 hover:bg-blue-700">
+          <Plus className="w-4 h-4 mr-2" />
+          Nouveau template
+        </Button>
       </div>
 
+      {/* Templates Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {templates.map((template) => (
           <Card key={template.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  {getTemplateIcon(template.type)}
-                  <CardTitle className="text-lg">{template.nom}</CardTitle>
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle className="text-lg font-semibold text-gray-900">
+                    {template.nom}
+                  </CardTitle>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {template.sujet}
+                  </p>
                 </div>
-                <Badge variant="secondary">
-                  {getTemplateLabel(template.type)}
+                <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                  {template.type}
                 </Badge>
               </div>
-              <CardDescription className="line-clamp-1">{template.sujet}</CardDescription>
             </CardHeader>
             
-            <CardContent>
-              <div className="text-sm text-gray-500 mb-4">
-                Créé le {new Date(template.created_at).toLocaleDateString()}
+            <CardContent className="space-y-4">
+              <div className="text-sm text-gray-600">
+                <div className="flex items-center mb-2">
+                  <FileText className="w-4 h-4 mr-2" />
+                  Variables: {Object.keys(template.variables || {}).length}
+                </div>
+                <p className="text-xs text-gray-500">
+                  Créé le: {new Date(template.created_at).toLocaleDateString('fr-FR')}
+                </p>
               </div>
-              
-              <div className="flex items-center space-x-2">
+
+              <div className="flex space-x-2">
                 <Button
-                  size="sm"
                   variant="outline"
-                  onClick={() => setPreviewTemplate(template)}
+                  size="sm"
+                  onClick={() => handlePreview(template)}
+                  className="flex-1"
                 >
-                  <Eye className="h-3 w-3 mr-1" />
+                  <Eye className="w-4 h-4 mr-1" />
                   Aperçu
                 </Button>
-                
                 <Button
-                  size="sm"
                   variant="outline"
-                  onClick={() => {
-                    setEditingTemplate(template);
-                    setFormData({
-                      nom: template.nom,
-                      sujet: template.sujet,
-                      contenu_html: template.contenu_html,
-                      contenu_text: template.contenu_text || '',
-                      type: template.type
-                    });
-                    setIsCreateDialogOpen(true);
-                  }}
+                  size="sm"
+                  onClick={() => handleEdit(template)}
+                  className="flex-1"
                 >
-                  <Edit className="h-3 w-3 mr-1" />
+                  <Edit className="w-4 h-4 mr-1" />
                   Modifier
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => deleteMutation.mutate(template.id)}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  <Trash2 className="w-4 h-4" />
                 </Button>
               </div>
             </CardContent>
@@ -366,54 +246,122 @@ export function EmailTemplates() {
         ))}
       </div>
 
-      {/* Dialog de prévisualisation */}
-      <Dialog open={!!previewTemplate} onOpenChange={() => setPreviewTemplate(null)}>
+      {/* Create/Edit Dialog */}
+      <Dialog open={isEditing} onOpenChange={(open) => {
+        setIsEditing(open);
+        if (!open) resetForm();
+      }}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Aperçu - {previewTemplate?.nom}</DialogTitle>
-            <DialogDescription>
-              Sujet: {previewTemplate?.sujet}
-            </DialogDescription>
+            <DialogTitle>
+              {selectedTemplate ? 'Modifier le template' : 'Nouveau template'}
+            </DialogTitle>
           </DialogHeader>
           
-          <div className="border rounded-lg p-4 bg-white">
-            <div 
-              dangerouslySetInnerHTML={{ 
-                __html: (previewTemplate?.contenu_html || '')
-                  .replace(/\{\{prenom\}\}/g, 'Jean')
-                  .replace(/\{\{nom\}\}/g, 'Dupont')
-                  .replace(/\{\{email\}\}/g, 'jean.dupont@email.com')
-                  .replace(/\{\{commercial_nom\}\}/g, 'Marie Martin')
-                  .replace(/\{\{commercial_telephone\}\}/g, '01 23 45 67 89')
-                  .replace(/\{\{date_fin_offre\}\}/g, new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString())
-              }} 
-            />
-          </div>
-          
-          <div className="flex justify-end">
-            <Button onClick={() => setPreviewTemplate(null)}>
-              Fermer
-            </Button>
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="nom">Nom du template</Label>
+                <Input
+                  id="nom"
+                  value={formData.nom}
+                  onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
+                  placeholder="Ex: Email de bienvenue"
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="type">Type</Label>
+                <Select
+                  value={formData.type}
+                  onValueChange={(value) => setFormData({ ...formData, type: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="prospection">Prospection</SelectItem>
+                    <SelectItem value="relance">Relance</SelectItem>
+                    <SelectItem value="bienvenue">Bienvenue</SelectItem>
+                    <SelectItem value="suivi">Suivi</SelectItem>
+                    <SelectItem value="newsletter">Newsletter</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="sujet">Sujet</Label>
+              <Input
+                id="sujet"
+                value={formData.sujet}
+                onChange={(e) => setFormData({ ...formData, sujet: e.target.value })}
+                placeholder="Sujet de l'email"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="contenu_html">Contenu HTML</Label>
+              <Textarea
+                id="contenu_html"
+                value={formData.contenu_html}
+                onChange={(e) => setFormData({ ...formData, contenu_html: e.target.value })}
+                placeholder="Contenu HTML de l'email avec variables {{nom}}, {{prenom}}, etc."
+                rows={10}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="contenu_text">Contenu texte (optionnel)</Label>
+              <Textarea
+                id="contenu_text"
+                value={formData.contenu_text}
+                onChange={(e) => setFormData({ ...formData, contenu_text: e.target.value })}
+                placeholder="Version texte de l'email"
+                rows={5}
+              />
+            </div>
+
+            <div className="flex justify-end space-x-2">
+              <Button type="button" variant="outline" onClick={resetForm}>
+                Annuler
+              </Button>
+              <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
+                {selectedTemplate ? 'Mettre à jour' : 'Créer'}
+              </Button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
 
-      {templates.length === 0 && (
-        <Card className="text-center py-12">
-          <CardHeader>
-            <CardTitle>Aucun template configuré</CardTitle>
-            <CardDescription>
-              Créez votre premier template d'email pour commencer l'automatisation
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={() => setIsCreateDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Créer un template
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+      {/* Preview Dialog */}
+      <Dialog open={showPreview} onOpenChange={setShowPreview}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Aperçu du template</DialogTitle>
+          </DialogHeader>
+          
+          {selectedTemplate && (
+            <div className="space-y-4">
+              <div className="border-b pb-4">
+                <h3 className="font-semibold">Sujet:</h3>
+                <p className="text-gray-700">{selectedTemplate.sujet}</p>
+              </div>
+              
+              <div>
+                <h3 className="font-semibold mb-2">Contenu:</h3>
+                <div 
+                  className="border rounded-lg p-4 bg-gray-50 max-h-96 overflow-y-auto"
+                  dangerouslySetInnerHTML={generatePreviewContent(selectedTemplate)}
+                />
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

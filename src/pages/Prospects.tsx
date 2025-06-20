@@ -58,7 +58,9 @@ export default function Prospects() {
   const filteredProspects = prospects.filter(prospect => {
     const fullName = `${prospect.first_name} ${prospect.last_name}`.toLowerCase();
     const matchesSearch = fullName.includes(searchTerm.toLowerCase()) ||
-                         (prospect.email && prospect.email.toLowerCase().includes(searchTerm.toLowerCase()));
+                         (prospect.email && prospect.email.toLowerCase().includes(search
+
+Term.toLowerCase()));
     const matchesStatus = statusFilter === 'all' || prospect.status === statusFilter;
     const matchesAssignee = user?.role === 'commercial' ? prospect.assigned_to === user.id : true;
     
@@ -201,13 +203,13 @@ export default function Prospects() {
             telephone: prospect.phone || '',
             date_naissance: prospect.birth_date ? new Date(prospect.birth_date).toLocaleDateString('fr-FR') : undefined,
             age: age,
-            statut: prospect.status === 'new' ? 'nouveau' : 
+            statut: (prospect.status === 'new' ? 'nouveau' : 
                    prospect.status === 'qualified' ? 'qualifie' :
                    prospect.status === 'interested' ? 'interesse' :
                    prospect.status === 'negotiating' ? 'negocie' :
                    prospect.status === 'converted' ? 'signe' :
                    prospect.status === 'lost' ? 'perdu' :
-                   'nouveau' as 'nouveau' | 'qualifie' | 'interesse' | 'negocie' | 'signe' | 'perdu',
+                   'nouveau') as 'nouveau' | 'qualifie' | 'interesse' | 'negocie' | 'signe' | 'perdu',
             score: 75,
             budget_max: prospect.expected_revenue || 200,
             type_contrat: 'individuel' as 'individuel' | 'couple' | 'famille',
