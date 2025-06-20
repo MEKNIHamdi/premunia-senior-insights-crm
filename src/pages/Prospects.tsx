@@ -58,9 +58,7 @@ export default function Prospects() {
   const filteredProspects = prospects.filter(prospect => {
     const fullName = `${prospect.first_name} ${prospect.last_name}`.toLowerCase();
     const matchesSearch = fullName.includes(searchTerm.toLowerCase()) ||
-                         (prospect.email && prospect.email.toLowerCase().includes(search
-
-Term.toLowerCase()));
+                         (prospect.email && prospect.email.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesStatus = statusFilter === 'all' || prospect.status === statusFilter;
     const matchesAssignee = user?.role === 'commercial' ? prospect.assigned_to === user.id : true;
     
