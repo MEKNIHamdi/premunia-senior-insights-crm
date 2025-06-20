@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -10,16 +9,22 @@ import { useAuth } from '@/hooks/useAuth';
 export function ObjectivesWidget() {
   const { user } = useAuth();
   
-  const { data: objectives = [], isLoading } = useQuery({
+  const { data: objectives = [], isLoading, error } = useQuery({
     queryKey: ['user-objectives', user?.id],
-    queryFn: () => {
+    queryFn: async () => {
       if (!user?.id) return [];
-      return commercialObjectivesApi.getByCommercial(user.id);
+      try {
+        return await commercialObjectivesApi.getByCommercial(user.id);
+      } catch (error) {
+        console.error('Erreur lors du chargement des objectifs:', error);
+        return [];
+      }
     },
-    enabled: !!user?.id
+    enabled: !!user?.id,
+    retry: 1
   });
 
-  const currentMonth = new Date().toISOString().slice(0, 7); // Format: 2024-01
+  const currentMonth = new Date().toISOString().slice(0, 7);
   const currentObjective = objectives.find(obj => 
     obj.periode_type === 'mensuel' && obj.periode_valeur === currentMonth
   );
@@ -44,6 +49,26 @@ export function ObjectivesWidget() {
     );
   }
 
+  if (error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Target className="h-5 w-5" />
+            <span>Mes objectifs</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-6 text-red-500">
+            <Target className="h-12 w-12 mx-auto mb-2 opacity-50" />
+            <p>Erreur de chargement des objectifs</p>
+            <p className="text-sm text-gray-500 mt-1">Vérifiez la connexion à la base de données</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (!currentObjective) {
     return (
       <Card>
@@ -58,6 +83,7 @@ export function ObjectivesWidget() {
           <div className="text-center py-6 text-gray-500">
             <Target className="h-12 w-12 mx-auto mb-2 opacity-50" />
             <p>Aucun objectif défini pour ce mois</p>
+            <p className="text-sm mt-1">Utilisez la page Marketing pour configurer vos objectifs</p>
           </div>
         </CardContent>
       </Card>

@@ -1,4 +1,6 @@
+
 import { SupabaseDebug } from '@/components/debug/SupabaseDebug';
+import { ConnectionTester } from '@/components/debug/ConnectionTester';
 
 export default function Debug() {
   return (
@@ -10,7 +12,8 @@ export default function Debug() {
         </p>
       </div>
 
-      <div className="flex justify-center">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <ConnectionTester />
         <SupabaseDebug />
       </div>
     </div>

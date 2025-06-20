@@ -1,3 +1,4 @@
+
 // Test de connexion Supabase
 import { supabase } from '@/integrations/supabase/client';
 
@@ -28,8 +29,11 @@ export async function createTestProfile() {
   try {
     console.log('🔄 Création d\'un profil de test...');
     
+    // Générer un UUID valide pour le profil de test
+    const testUuid = crypto.randomUUID();
+    
     const testProfile = {
-      id: '1',
+      id: testUuid,
       email: 'admin@premunia.fr',
       first_name: 'Jean',
       last_name: 'Dupont',
@@ -58,6 +62,25 @@ export async function createTestData() {
   try {
     console.log('🔄 Création de données de test...');
     
+    // D'abord créer un profil de test valide
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('email', 'admin@premunia.fr')
+      .maybeSingle();
+    
+    let assignedToId;
+    if (profileError || !profileData) {
+      // Créer le profil s'il n'existe pas
+      const profileResult = await createTestProfile();
+      if (!profileResult.success) {
+        return profileResult;
+      }
+      assignedToId = profileResult.data[0].id;
+    } else {
+      assignedToId = profileData.id;
+    }
+    
     // Créer des prospects de test
     const testProspects = [
       {
@@ -65,24 +88,22 @@ export async function createTestData() {
         last_name: 'Martin',
         email: 'marie.martin@email.com',
         phone: '01.23.45.67.89',
-        birth_date: '1956-03-15',
         status: 'qualified',
         priority: 'high',
         expected_revenue: 2500,
         interest_type: 'health_insurance',
-        assigned_to: '1'
+        assigned_to: assignedToId
       },
       {
         first_name: 'Paul',
         last_name: 'Bernard',
         email: 'paul.bernard@email.com',
         phone: '01.34.56.78.90',
-        birth_date: '1952-08-22',
         status: 'interested',
         priority: 'medium',
         expected_revenue: 1800,
         interest_type: 'health_insurance',
-        assigned_to: '1'
+        assigned_to: assignedToId
       }
     ];
     
@@ -101,7 +122,7 @@ export async function createTestData() {
     // Créer des objectifs commerciaux de test
     const currentMonth = new Date().toISOString().slice(0, 7);
     const testObjective = {
-      commercial_id: '1',
+      commercial_id: assignedToId,
       periode_type: 'mensuel',
       periode_valeur: currentMonth,
       objectif_ca: 50000,

@@ -11,22 +11,22 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock user data for demo
+// Mock user data pour la démo avec des UUIDs valides
 const MOCK_USERS: User[] = [
   {
-    id: '1',
+    id: '550e8400-e29b-41d4-a716-446655440000',
     email: 'admin@premunia.fr',
     name: 'Jean Dupont',
     role: 'admin'
   },
   {
-    id: '2',
+    id: '550e8400-e29b-41d4-a716-446655440001',
     email: 'manager@premunia.fr',
     name: 'Marie Leblanc',
     role: 'manager'
   },
   {
-    id: '3',
+    id: '550e8400-e29b-41d4-a716-446655440002',
     email: 'commercial@premunia.fr',
     name: 'Pierre Martin',
     role: 'commercial'
@@ -38,7 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session
+    // Vérifier la session existante
     const savedUser = localStorage.getItem('premunia_user');
     if (savedUser) {
       setUser(JSON.parse(savedUser));
@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     
-    // Mock authentication - in real app, this would be Supabase
+    // Authentification mock - dans une vraie app, ce serait Supabase
     const mockUser = MOCK_USERS.find(u => u.email === email);
     if (mockUser && password === 'demo123') {
       setUser(mockUser);
