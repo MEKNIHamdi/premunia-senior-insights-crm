@@ -31,7 +31,12 @@ export const prospectsApi = {
         console.error('Erreur lors du chargement des prospects:', error);
         throw error;
       }
-      return data || [];
+      
+      // Ajouter les champs manquants pour la compatibilité
+      return (data || []).map(prospect => ({
+        ...prospect,
+        birth_date: prospect.birth_date || null
+      }));
     } catch (error) {
       console.error('Erreur API prospects:', error);
       return [];

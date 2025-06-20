@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -73,7 +74,7 @@ export default function Prospects() {
     }
   };
 
-  const calculateAge = (birthDate: string) => {
+  const calculateAge = (birthDate: string | null) => {
     if (!birthDate) return null;
     const today = new Date();
     const birth = new Date(birthDate);
@@ -171,7 +172,9 @@ export default function Prospects() {
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-full sm:w-48 border-gray-200">
-                <Filter className="w-4 h-4 mr-2" />
+                <Filter className="w-4 h-4 mr-2"
+
+                />
                 <SelectValue placeholder="Filtrer par statut" />
               </SelectTrigger>
               <SelectContent>
@@ -191,19 +194,25 @@ export default function Prospects() {
       {/* Prospects Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {filteredProspects.map((prospect) => {
-          const age = calculateAge(prospect.birth_date);
+          const age = calculateAge(prospect.birth_date || null);
           const mockProspectForComparator = {
             id: prospect.id,
             nom: prospect.last_name,
             prenom: prospect.first_name,
-            email: prospect.email,
-            telephone: prospect.phone,
+            email: prospect.email || '',
+            telephone: prospect.phone || '',
             date_naissance: prospect.birth_date ? new Date(prospect.birth_date).toLocaleDateString('fr-FR') : undefined,
             age: age,
-            statut: prospect.status || 'nouveau',
-            score: 75, // Mock score
+            statut: prospect.status === 'new' ? 'nouveau' : 
+                   prospect.status === 'qualified' ? 'qualifie' :
+                   prospect.status === 'interested' ? 'interesse' :
+                   prospect.status === 'negotiating' ? 'negocie' :
+                   prospect.status === 'converted' ? 'signe' :
+                   prospect.status === 'lost' ? 'perdu' :
+                   'nouveau' as const,
+            score: 75,
             budget_max: prospect.expected_revenue || 200,
-            type_contrat: 'individuel',
+            type_contrat: 'individuel' as const,
             commercial_id: prospect.assigned_to,
             date_creation: prospect.created_at,
             derniere_activite: prospect.updated_at || prospect.created_at
@@ -238,8 +247,8 @@ export default function Prospects() {
               <CardContent className="space-y-4">
                 {/* Status and Priority */}
                 <div className="flex items-center justify-between">
-                  <Badge className={`${statutColors[prospect.status] || statutColors['new']} border-0`}>
-                    {statutLabels[prospect.status] || 'Nouveau'}
+                  <Badge className={`${statutColors[prospect.status as keyof typeof statutColors] || statutColors['new']} border-0`}>
+                    {statutLabels[prospect.status as keyof typeof statutLabels] || 'Nouveau'}
                   </Badge>
                   <div className="flex items-center space-x-1">
                     <Star className={`w-4 h-4 ${getScoreColor(prospect.priority || 'medium')}`} />
