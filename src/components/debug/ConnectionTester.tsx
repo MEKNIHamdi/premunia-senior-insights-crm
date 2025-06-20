@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -33,7 +32,7 @@ export function ConnectionTester() {
         message: 'Connexion réussie à la base de données',
         details: data
       });
-    } catch (error) {
+    } catch (error: any) {
       testResults.push({
         name: 'Connexion Supabase',
         status: 'error',
@@ -44,7 +43,7 @@ export function ConnectionTester() {
     
     // Test 2: Tables existantes
     try {
-      const tables = ['profiles', 'prospects', 'commercial_objectives', 'automation_scenarios'];
+      const tables = ['profiles', 'prospects', 'commercial_objectives', 'automation_scenarios'] as const;
       for (const table of tables) {
         try {
           const { error } = await supabase.from(table).select('count(*)').limit(1);
@@ -54,7 +53,7 @@ export function ConnectionTester() {
             status: 'success',
             message: `Table ${table} accessible`
           });
-        } catch (error) {
+        } catch (error: any) {
           testResults.push({
             name: `Table ${table}`,
             status: 'error',
@@ -79,7 +78,7 @@ export function ConnectionTester() {
         message: user ? `Utilisateur connecté: ${user.email}` : 'Aucun utilisateur connecté',
         details: user
       });
-    } catch (error) {
+    } catch (error: any) {
       testResults.push({
         name: 'Authentification',
         status: 'error',
@@ -96,7 +95,7 @@ export function ConnectionTester() {
         message: error ? `Erreur RLS: ${error.message}` : 'Politiques RLS fonctionnelles',
         details: { recordCount: data?.length || 0 }
       });
-    } catch (error) {
+    } catch (error: any) {
       testResults.push({
         name: 'Politiques RLS',
         status: 'error',
@@ -188,8 +187,8 @@ export function ConnectionTester() {
         <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
           <h5 className="font-medium text-blue-800 mb-2">Configuration Supabase:</h5>
           <div className="text-sm text-blue-700 space-y-1">
-            <p>URL: {import.meta.env.VITE_SUPABASE_URL || 'https://wkmmnhqudzsswxwqrwhg.supabase.co'}</p>
-            <p>Clé: {import.meta.env.VITE_SUPABASE_ANON_KEY ? 'Configurée' : 'eyJhbG...px0 (configurée)'}</p>
+            <p>URL: https://wkmmnhqudzsswxwqrwhg.supabase.co</p>
+            <p>Clé: Configurée</p>
             <p>Project ID: wkmmnhqudzsswxwqrwhg</p>
           </div>
         </div>

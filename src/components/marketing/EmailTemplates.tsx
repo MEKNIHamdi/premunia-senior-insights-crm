@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,7 +40,7 @@ export function EmailTemplates() {
       resetForm();
       toast({ title: "Template créé avec succès" });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({ title: "Erreur", description: error.message, variant: "destructive" });
     }
   });
@@ -55,7 +54,7 @@ export function EmailTemplates() {
       resetForm();
       toast({ title: "Template mis à jour avec succès" });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({ title: "Erreur", description: error.message, variant: "destructive" });
     }
   });
@@ -379,14 +378,13 @@ export function EmailTemplates() {
           <div className="border rounded-lg p-4 bg-white">
             <div 
               dangerouslySetInnerHTML={{ 
-                __html: previewTemplate?.contenu_html
-                  .replace(/{{prenom}}/g, 'Jean')
-                  .replace(/{{nom}}/g, 'Dupont')
-                  .replace(/{{email}}/g, 'jean.dupont@email.com')
-                  .replace(/{{commercial_nom}}/g, 'Marie Martin')
-                  .replace(/{{commercial_telephone}}/g, '01 23 45 67 89')
-                  .replace(/{{date_fin_offre}}/g, new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString())
-                  || ''
+                __html: (previewTemplate?.contenu_html || '')
+                  .replace(/\{\{prenom\}\}/g, 'Jean')
+                  .replace(/\{\{nom\}\}/g, 'Dupont')
+                  .replace(/\{\{email\}\}/g, 'jean.dupont@email.com')
+                  .replace(/\{\{commercial_nom\}\}/g, 'Marie Martin')
+                  .replace(/\{\{commercial_telephone\}\}/g, '01 23 45 67 89')
+                  .replace(/\{\{date_fin_offre\}\}/g, new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString())
               }} 
             />
           </div>

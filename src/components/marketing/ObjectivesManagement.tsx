@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Target, TrendingUp, TrendingDown, Users, Euro, Calendar, PhoneCall } from 'lucide-react';
 import { commercialObjectivesApi, CommercialObjective } from '@/lib/marketing-api';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 
@@ -26,7 +27,11 @@ export function ObjectivesManagement() {
     objectif_ca: 0,
     objectif_prospects: 0,
     objectif_conversions: 0,
-    objectif_rdv: 0
+    objectif_rdv: 0,
+    ca_realise: 0,
+    prospects_realises: 0,
+    conversions_realisees: 0,
+    rdv_realises: 0
   });
 
   const queryClient = useQueryClient();
@@ -53,7 +58,7 @@ export function ObjectivesManagement() {
       resetForm();
       toast({ title: "Objectif créé avec succès" });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({ title: "Erreur", description: error.message, variant: "destructive" });
     }
   });
@@ -67,7 +72,7 @@ export function ObjectivesManagement() {
       resetForm();
       toast({ title: "Objectif mis à jour avec succès" });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({ title: "Erreur", description: error.message, variant: "destructive" });
     }
   });
@@ -76,7 +81,6 @@ export function ObjectivesManagement() {
     const currentDate = new Date();
     const currentMonth = currentDate.getMonth() + 1;
     const currentYear = currentDate.getFullYear();
-    const currentQuarter = Math.ceil(currentMonth / 3);
 
     setFormData({
       commercial_id: '',
@@ -85,7 +89,11 @@ export function ObjectivesManagement() {
       objectif_ca: 0,
       objectif_prospects: 0,
       objectif_conversions: 0,
-      objectif_rdv: 0
+      objectif_rdv: 0,
+      ca_realise: 0,
+      prospects_realises: 0,
+      conversions_realisees: 0,
+      rdv_realises: 0
     });
   };
 
@@ -166,7 +174,10 @@ export function ObjectivesManagement() {
         </div>
         
         <div className="flex items-center space-x-4">
-          <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+          <Select 
+            value={selectedPeriod} 
+            onValueChange={(value: 'mensuel' | 'trimestriel' | 'annuel') => setSelectedPeriod(value)}
+          >
             <SelectTrigger className="w-48">
               <SelectValue />
             </SelectTrigger>
@@ -363,7 +374,11 @@ export function ObjectivesManagement() {
                           objectif_ca: objective.objectif_ca || 0,
                           objectif_prospects: objective.objectif_prospects || 0,
                           objectif_conversions: objective.objectif_conversions || 0,
-                          objectif_rdv: objective.objectif_rdv || 0
+                          objectif_rdv: objective.objectif_rdv || 0,
+                          ca_realise: objective.ca_realise,
+                          prospects_realises: objective.prospects_realises,
+                          conversions_realisees: objective.conversions_realisees,
+                          rdv_realises: objective.rdv_realises
                         });
                         setIsCreateDialogOpen(true);
                       }}

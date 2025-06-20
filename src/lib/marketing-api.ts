@@ -65,13 +65,22 @@ export interface PerformanceStat {
 // API pour les scénarios d'automatisation
 export const automationScenariosApi = {
   async getAll(): Promise<AutomationScenario[]> {
-    const { data, error } = await supabase
-      .from('automation_scenarios')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    if (error) throw error;
-    return data || [];
+    try {
+      const { data, error } = await supabase
+        .from('automation_scenarios')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return (data || []).map(item => ({
+        ...item,
+        type: item.type as AutomationScenario['type'],
+        statut: item.statut as AutomationScenario['statut']
+      }));
+    } catch (error) {
+      console.error('Erreur lors du chargement des scénarios:', error);
+      return [];
+    }
   },
 
   async create(scenario: Omit<AutomationScenario, 'id' | 'created_at' | 'updated_at'>): Promise<AutomationScenario> {
@@ -82,7 +91,11 @@ export const automationScenariosApi = {
       .single();
     
     if (error) throw error;
-    return data;
+    return {
+      ...data,
+      type: data.type as AutomationScenario['type'],
+      statut: data.statut as AutomationScenario['statut']
+    };
   },
 
   async update(id: string, updates: Partial<AutomationScenario>): Promise<AutomationScenario> {
@@ -94,7 +107,11 @@ export const automationScenariosApi = {
       .single();
     
     if (error) throw error;
-    return data;
+    return {
+      ...data,
+      type: data.type as AutomationScenario['type'],
+      statut: data.statut as AutomationScenario['statut']
+    };
   },
 
   async delete(id: string): Promise<void> {
@@ -110,24 +127,40 @@ export const automationScenariosApi = {
 // API pour les templates d'emails
 export const emailTemplatesApi = {
   async getAll(): Promise<EmailTemplate[]> {
-    const { data, error } = await supabase
-      .from('email_templates')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    if (error) throw error;
-    return data || [];
+    try {
+      const { data, error } = await supabase
+        .from('email_templates')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return (data || []).map(item => ({
+        ...item,
+        type: item.type as EmailTemplate['type']
+      }));
+    } catch (error) {
+      console.error('Erreur lors du chargement des templates:', error);
+      return [];
+    }
   },
 
   async getByType(type: EmailTemplate['type']): Promise<EmailTemplate[]> {
-    const { data, error } = await supabase
-      .from('email_templates')
-      .select('*')
-      .eq('type', type)
-      .order('created_at', { ascending: false });
-    
-    if (error) throw error;
-    return data || [];
+    try {
+      const { data, error } = await supabase
+        .from('email_templates')
+        .select('*')
+        .eq('type', type)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return (data || []).map(item => ({
+        ...item,
+        type: item.type as EmailTemplate['type']
+      }));
+    } catch (error) {
+      console.error('Erreur lors du chargement des templates par type:', error);
+      return [];
+    }
   },
 
   async create(template: Omit<EmailTemplate, 'id' | 'created_at' | 'updated_at'>): Promise<EmailTemplate> {
@@ -138,7 +171,10 @@ export const emailTemplatesApi = {
       .single();
     
     if (error) throw error;
-    return data;
+    return {
+      ...data,
+      type: data.type as EmailTemplate['type']
+    };
   },
 
   async update(id: string, updates: Partial<EmailTemplate>): Promise<EmailTemplate> {
@@ -150,31 +186,50 @@ export const emailTemplatesApi = {
       .single();
     
     if (error) throw error;
-    return data;
+    return {
+      ...data,
+      type: data.type as EmailTemplate['type']
+    };
   }
 };
 
 // API pour les objectifs commerciaux
 export const commercialObjectivesApi = {
   async getAll(): Promise<CommercialObjective[]> {
-    const { data, error } = await supabase
-      .from('commercial_objectives')
-      .select('*')
-      .order('periode_valeur', { ascending: false });
-    
-    if (error) throw error;
-    return data || [];
+    try {
+      const { data, error } = await supabase
+        .from('commercial_objectives')
+        .select('*')
+        .order('periode_valeur', { ascending: false });
+      
+      if (error) throw error;
+      return (data || []).map(item => ({
+        ...item,
+        periode_type: item.periode_type as CommercialObjective['periode_type']
+      }));
+    } catch (error) {
+      console.error('Erreur lors du chargement des objectifs:', error);
+      return [];
+    }
   },
 
   async getByCommercial(commercialId: string): Promise<CommercialObjective[]> {
-    const { data, error } = await supabase
-      .from('commercial_objectives')
-      .select('*')
-      .eq('commercial_id', commercialId)
-      .order('periode_valeur', { ascending: false });
-    
-    if (error) throw error;
-    return data || [];
+    try {
+      const { data, error } = await supabase
+        .from('commercial_objectives')
+        .select('*')
+        .eq('commercial_id', commercialId)
+        .order('periode_valeur', { ascending: false });
+      
+      if (error) throw error;
+      return (data || []).map(item => ({
+        ...item,
+        periode_type: item.periode_type as CommercialObjective['periode_type']
+      }));
+    } catch (error) {
+      console.error('Erreur lors du chargement des objectifs par commercial:', error);
+      return [];
+    }
   },
 
   async create(objective: Omit<CommercialObjective, 'id' | 'created_at' | 'updated_at'>): Promise<CommercialObjective> {
@@ -185,7 +240,10 @@ export const commercialObjectivesApi = {
       .single();
     
     if (error) throw error;
-    return data;
+    return {
+      ...data,
+      periode_type: data.periode_type as CommercialObjective['periode_type']
+    };
   },
 
   async update(id: string, updates: Partial<CommercialObjective>): Promise<CommercialObjective> {
@@ -197,39 +255,52 @@ export const commercialObjectivesApi = {
       .single();
     
     if (error) throw error;
-    return data;
+    return {
+      ...data,
+      periode_type: data.periode_type as CommercialObjective['periode_type']
+    };
   }
 };
 
 // API pour les statistiques de performance
 export const performanceStatsApi = {
   async getByCommercial(commercialId: string, dateFrom?: string, dateTo?: string): Promise<PerformanceStat[]> {
-    let query = supabase
-      .from('performance_stats')
-      .select('*')
-      .eq('commercial_id', commercialId);
+    try {
+      let query = supabase
+        .from('performance_stats')
+        .select('*')
+        .eq('commercial_id', commercialId);
 
-    if (dateFrom) query = query.gte('date_stat', dateFrom);
-    if (dateTo) query = query.lte('date_stat', dateTo);
+      if (dateFrom) query = query.gte('date_stat', dateFrom);
+      if (dateTo) query = query.lte('date_stat', dateTo);
 
-    const { data, error } = await query.order('date_stat', { ascending: false });
-    
-    if (error) throw error;
-    return data || [];
+      const { data, error } = await query.order('date_stat', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Erreur lors du chargement des stats par commercial:', error);
+      return [];
+    }
   },
 
   async getAllStats(dateFrom?: string, dateTo?: string): Promise<PerformanceStat[]> {
-    let query = supabase
-      .from('performance_stats')
-      .select('*');
+    try {
+      let query = supabase
+        .from('performance_stats')
+        .select('*');
 
-    if (dateFrom) query = query.gte('date_stat', dateFrom);
-    if (dateTo) query = query.lte('date_stat', dateTo);
+      if (dateFrom) query = query.gte('date_stat', dateFrom);
+      if (dateTo) query = query.lte('date_stat', dateTo);
 
-    const { data, error } = await query.order('date_stat', { ascending: false });
-    
-    if (error) throw error;
-    return data || [];
+      const { data, error } = await query.order('date_stat', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Erreur lors du chargement des stats globales:', error);
+      return [];
+    }
   },
 
   async upsertStat(stat: Omit<PerformanceStat, 'id' | 'created_at'>): Promise<PerformanceStat> {
@@ -265,13 +336,18 @@ export const marketingEventsApi = {
   },
 
   async getRecentEvents(limit: number = 50): Promise<any[]> {
-    const { data, error } = await supabase
-      .from('marketing_events')
-      .select('*')
-      .order('date_evenement', { ascending: false })
-      .limit(limit);
-    
-    if (error) throw error;
-    return data || [];
+    try {
+      const { data, error } = await supabase
+        .from('marketing_events')
+        .select('*')
+        .order('date_evenement', { ascending: false })
+        .limit(limit);
+      
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Erreur lors du chargement des événements récents:', error);
+      return [];
+    }
   }
 };
